@@ -1,21 +1,21 @@
 package main
 
 import (
-  "fmt"
   "net/http"
+  "github.com/gin-gonic/gin"
 )
 
 func main() {
-  var confereenceName = "Sam Li"
-  fmt.Println("My Name is", confereenceName)
-
-  http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-    fmt.Fprintf(w, "Hello, you've requested: %s\n", r.URL.Path)
+  r := gin.Default()
+  r.GET("/", func(c *gin.Context) {
+    c.JSON(http.StatusOK, gin.H{
+      "message": "home",
+    })
   })
-
-  http.HandleFunc("/api/blogs", func(w http.ResponseWriter, r *http.Request) {
-    fmt.Fprintf(w, "API Blogs: %s\n", r.URL.Path)
+  r.GET("/ping", func(c *gin.Context) {
+    c.JSON(http.StatusOK, gin.H{
+      "message": "pong",
+    })
   })
-
-  http.ListenAndServe(":80", nil)
+  r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
