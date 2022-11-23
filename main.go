@@ -7,8 +7,22 @@ import (
 
 //Todo: add favicon
 
+
+func requestHandler() (gin.HandlerFunc) {
+  return func(context *gin.Context) {
+    context.Set("session", "user1")
+    context.Next()
+
+    //context.Abort()
+  }
+}
+
 func main() {
+  gin.SetMode(gin.ReleaseMode)
+
   ginServer := gin.Default()
+
+  ginServer.SetTrustedProxies([]string{"100.20.92.101","44.225.181.72","44.227.217.144"})
 
 
   ginServer.LoadHTMLGlob("templates/*")
