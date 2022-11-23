@@ -27,6 +27,10 @@ func main() {
     })
   })
 
+  ginServer.NoRoute(func(context *gin.Context) {
+    context.HTML(http.StatusNotFound, "404.html",nil)
+  })
+
   ginServer.GET("/ping", func(context *gin.Context) {
     context.JSON(http.StatusOK, gin.H{
       "message": "pong",
