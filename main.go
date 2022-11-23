@@ -5,17 +5,27 @@ import (
   "github.com/gin-gonic/gin"
 )
 
+//Todo: add favicon
+
 func main() {
-  r := gin.Default()
-  r.GET("/", func(c *gin.Context) {
-    c.JSON(http.StatusOK, gin.H{
-      "message": "home",
+  ginServer := gin.Default()
+
+
+  ginServer.LoadHTMLGlob("templates/*")
+  ginServer.Static("/static", "./static")
+
+  ginServer.GET("/", func(context *gin.Context) {
+    context.HTML(http.StatusOK, "index.html",gin.H{
+      "msg":"first msg",
     })
   })
-  r.GET("/ping", func(c *gin.Context) {
-    c.JSON(http.StatusOK, gin.H{
+
+  
+
+  ginServer.GET("/ping", func(context *gin.Context) {
+    context.JSON(http.StatusOK, gin.H{
       "message": "pong",
     })
   })
-  r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+  ginServer.Run(":8080") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
