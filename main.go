@@ -20,7 +20,12 @@ func main() {
     })
   })
 
-  
+  ginServer.GET("/api/blog/:id", func(context *gin.Context)  {
+    blogId := context.Param("id")
+    context.JSON(http.StatusOK, gin.H{
+      "blogId": blogId,
+    })
+  })
 
   ginServer.GET("/ping", func(context *gin.Context) {
     context.JSON(http.StatusOK, gin.H{
