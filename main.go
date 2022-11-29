@@ -1,8 +1,15 @@
 package main
 
 import (
+  "context"
+  "log"
+  "os"
   "net/http"
   "github.com/gin-gonic/gin"
+  "github.com/joho/godotenv"
+	// "go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 //Todo: add favicon
@@ -18,6 +25,26 @@ func requestHandler() (gin.HandlerFunc) {
 }
 
 func main() {
+  if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found")
+	}
+
+  uri := os.Getenv("MONGO_URL")
+
+	if uri == "" {
+		log.Fatal("You must set your 'MONGO_URL' environmental variable. See\n\t https://www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
+	}
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
+	if err != nil {
+		// panic(err)
+	}
+	defer func() {
+		if err := client.Disconnect(context.TODO()); err != nil {
+			// panic(err)
+		}
+	}()
+
+
   gin.SetMode(gin.ReleaseMode)
 
   ginServer := gin.Default()
