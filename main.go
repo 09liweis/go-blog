@@ -1,12 +1,12 @@
 package main
 
 import (
-  "context"
-  "log"
-  "os"
-  "net/http"
-  "github.com/gin-gonic/gin"
-  "github.com/joho/godotenv"
+	"context"
+	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
+	"log"
+	"net/http"
+	"os"
 	// "go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -14,22 +14,21 @@ import (
 
 //Todo: add favicon
 
+func requestHandler() gin.HandlerFunc {
+	return func(context *gin.Context) {
+		context.Set("session", "user1")
+		context.Next()
 
-func requestHandler() (gin.HandlerFunc) {
-  return func(context *gin.Context) {
-    context.Set("session", "user1")
-    context.Next()
-
-    //context.Abort()
-  }
+		//context.Abort()
+	}
 }
 
 func main() {
-  if err := godotenv.Load(); err != nil {
+	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
 	}
 
-  uri := os.Getenv("MONGO_URL")
+	uri := os.Getenv("MONGODB_URL")
 
 	if uri == "" {
 		log.Fatal("You must set your 'MONGO_URL' environmental variable. See\n\t https://www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
@@ -44,53 +43,49 @@ func main() {
 		}
 	}()
 
+	gin.SetMode(gin.ReleaseMode)
 
-  gin.SetMode(gin.ReleaseMode)
+	ginServer := gin.Default()
 
-  ginServer := gin.Default()
+	ginServer.SetTrustedProxies([]string{"100.20.92.101", "44.225.181.72", "44.227.217.144"})
 
-  ginServer.SetTrustedProxies([]string{"100.20.92.101","44.225.181.72","44.227.217.144"})
+	ginServer.LoadHTMLGlob("templates/*")
+	ginServer.Static("/static", "./static")
 
+	ginServer.GET("/", func(context *gin.Context) {
+		context.HTML(http.StatusOK, "index.html", gin.H{
+			"msg": "first msg",
+		})
+	})
 
-  ginServer.LoadHTMLGlob("templates/*")
-  ginServer.Static("/static", "./static")
+	ginServer.NoRoute(func(context *gin.Context) {
+		context.HTML(http.StatusNotFound, "404.html", nil)
+	})
 
-  ginServer.GET("/", func(context *gin.Context) {
-    context.HTML(http.StatusOK, "index.html",gin.H{
-      "msg":"first msg",
-    })
-  })
+	ginServer.GET("/ping", func(context *gin.Context) {
+		context.JSON(http.StatusOK, gin.H{
+			"message": "pong",
+		})
+	})
 
-  ginServer.NoRoute(func(context *gin.Context) {
-    context.HTML(http.StatusNotFound, "404.html",nil)
-  })
+	apiGroup := ginServer.Group("/api")
+	{
+		apiGroup.GET("/blogs", func(context *gin.Context) {
+			page := context.Query("page")
+			limit := context.Query("limit")
+			context.JSON(http.StatusOK, gin.H{
+				"page":  page,
+				"limit": limit,
+			})
+		})
 
-  ginServer.GET("/ping", func(context *gin.Context) {
-    context.JSON(http.StatusOK, gin.H{
-      "message": "pong",
-    })
-  })
+		apiGroup.GET("/blog/:id", func(context *gin.Context) {
+			blogId := context.Param("id")
+			context.JSON(http.StatusOK, gin.H{
+				"blogId": blogId,
+			})
+		})
+	}
 
-  apiGroup := ginServer.Group("/api")
-  {
-    apiGroup.GET("/blogs", func(context *gin.Context)  {
-      page := context.Query("page")
-      limit := context.Query("limit")
-      context.JSON(http.StatusOK, gin.H{
-        "page": page,
-        "limit": limit,
-      })
-    })
-
-    apiGroup.GET("/blog/:id", func(context *gin.Context)  {
-      blogId := context.Param("id")
-      context.JSON(http.StatusOK, gin.H{
-        "blogId": blogId,
-      })
-    })
-  }
-
-
-
-  ginServer.Run(":8080") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	ginServer.Run(":8080") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
