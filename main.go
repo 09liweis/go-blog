@@ -54,7 +54,7 @@ func main() {
 
 	ginServer.GET("/", func(context *gin.Context) {
 		context.HTML(http.StatusOK, "index.html", gin.H{
-			"msg": "first msg",
+			"msg": "first but not last msg",
 		})
 	})
 
