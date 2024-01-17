@@ -82,7 +82,7 @@ func main() {
 		apiGroup.GET("/blog/:id", func(context *gin.Context) {
 			blogId := context.Param("id")
 			context.JSON(http.StatusOK, gin.H{
-				"blogId": blogId,
+				"id": blogId,
 			})
 		})
 	}
