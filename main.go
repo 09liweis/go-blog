@@ -53,8 +53,9 @@ func main() {
 	ginServer.Static("/static", "./static")
 
 	ginServer.GET("/", func(context *gin.Context) {
+		const msg = "Hello World"
 		context.HTML(http.StatusOK, "index.html", gin.H{
-			"msg": "first but not last msg",
+			"msg": msg,
 		})
 	})
 
