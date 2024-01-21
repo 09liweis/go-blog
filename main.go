@@ -77,6 +77,7 @@ func main() {
 			context.JSON(http.StatusOK, gin.H{
 				"page":  page,
 				"limit": limit,
+				"array": []string{"a", "b", "c"},
 			})
 		})
 
