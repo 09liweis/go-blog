@@ -89,8 +89,6 @@ func main() {
 		})
 
 		apiGroup.GET("/movies", func(context *gin.Context) {
-			page := context.Query("page")
-			limit := context.Query("limit")
 			context.JSON(http.StatusOK, gin.H{
 				"movies": []string{"a", "b", "c"},
 			})
