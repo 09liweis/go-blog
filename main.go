@@ -7,7 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	// "go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -23,22 +23,65 @@ func requestHandler() gin.HandlerFunc {
 	}
 }
 
+var uri = os.Getenv("MONGODB_URL")
+var mongoClient *mongo.Client
+
+// This function runs before we call our main function and connects to our MongoDB database. If it cannot connect, the application stops.
+func init() {
+  if err := connect_to_mongodb(); err != nil {
+    log.Fatal("Could not connect to MongoDB")
+  }
+}
+
+func getMovies(c *gin.Context) {
+    // Find movies
+  cursor, err := mongoClient.Database("heroku_6njptcbp").Collection("visuals").Find(context.TODO(), bson.D{{}})
+  if err != nil {
+      c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+      return
+  }
+
+  // Map results
+  var movies []bson.M
+  if err = cursor.All(context.TODO(), &movies); err != nil {
+      c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+      return
+  }
+
+  // Return movies
+  c.JSON(http.StatusOK, movies)
+}
+
+// Our implementation code to connect to MongoDB at startup
+func connect_to_mongodb() error {
+  serverAPI := options.ServerAPI(options.ServerAPIVersion1)
+  opts := options.Client().ApplyURI(uri).SetServerAPIOptions(serverAPI)
+
+  client, err := mongo.Connect(context.TODO(), opts)
+  if err != nil {
+    panic(err)
+  }
+  err = client.Ping(context.TODO(), nil)
+  mongoClient = client
+  return err
+}
+
 func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
 	}
 
-	uri := os.Getenv("MONGODB_URL")
+	
 
 	if uri == "" {
 		log.Fatal("You must set your 'MONGO_URL' environmental variable. See\n\t https://www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
 	}
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
-	if err != nil {
-		// panic(err)
-	}
+	// mongoClient, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
+	// if err != nil {
+	// 	panic(err)
+	// }
 	defer func() {
-		if err := client.Disconnect(context.TODO()); err != nil {
+		if err := mongoClient.Disconnect(context.TODO()); err != nil {
 			// panic(err)
 		}
 	}()
@@ -88,11 +131,7 @@ func main() {
 			})
 		})
 
-		apiGroup.GET("/movies", func(context *gin.Context) {
-			context.JSON(http.StatusOK, gin.H{
-				"movies": []string{"a", "b", "c"},
-			})
-		})
+		apiGroup.GET("/movies", getMovies)
 	}
 
 	ginServer.Run(":8080") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
