@@ -110,7 +110,7 @@ func main() {
 		})
 	})
 
-	apiGroup := ginServer.Group("/api")
+	apiGroup := ginServer.Group("/api/v1")
 	{
 		apiGroup.GET("/blogs", func(context *gin.Context) {
 			page := context.Query("page")
