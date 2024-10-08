@@ -102,7 +102,9 @@ func main() {
 	})
 
 	ginServer.NoRoute(func(context *gin.Context) {
-		context.HTML(http.StatusNotFound, "404.html", nil)
+		context.HTML(http.StatusNotFound, "404.html", gin.H{
+			"title": "Go Blogs 404",
+		})
 	})
 
 	ginServer.GET("/ping", func(context *gin.Context) {
@@ -111,7 +113,7 @@ func main() {
 		})
 	})
 
-	apiGroup := ginServer.Group("/api/v1") 
+	apiGroup := ginServer.Group("/api/v1")
 	{
 		apiGroup.GET("/blogs", func(context *gin.Context) {
 			page := context.Query("page")
