@@ -66,6 +66,12 @@ func connect_to_mongodb() error {
 	return err
 }
 
+func pingResponse(context *gin.Context) {
+	context.JSON(http.StatusOK, gin.H{
+		"message": "pong",
+	})
+}
+
 func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
@@ -107,11 +113,7 @@ func main() {
 		})
 	})
 
-	ginServer.GET("/ping", func(context *gin.Context) {
-		context.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
-	})
+	ginServer.GET("/ping", pingResponse)
 
 	apiGroup := ginServer.Group("/api/v1")
 	{
