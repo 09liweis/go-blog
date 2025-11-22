@@ -26,13 +26,6 @@ func requestHandler() gin.HandlerFunc {
 var uri = os.Getenv("MONGODB_URL")
 var mongoClient *mongo.Client
 
-// This function runs before we call our main function and connects to our MongoDB database. If it cannot connect, the application stops.
-func init() {
-	if err := connect_to_mongodb(); err != nil {
-		log.Fatal("Could not connect to MongoDB")
-	}
-}
-
 func getMovies(c *gin.Context) {
 	// Find movies
 	cursor, err := mongoClient.Database("heroku_6njptcbp").Collection("visuals").Find(context.TODO(), bson.D{{}})
@@ -54,14 +47,23 @@ func getMovies(c *gin.Context) {
 
 // Our implementation code to connect to MongoDB at startup
 func connect_to_mongodb() error {
+	log.Printf("Attempting to connect to MongoDB...")
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 	opts := options.Client().ApplyURI(uri).SetServerAPIOptions(serverAPI)
 
 	client, err := mongo.Connect(context.TODO(), opts)
 	if err != nil {
-		panic(err)
+		log.Printf("MongoDB connection error: %v", err)
+		return err
 	}
+	
 	err = client.Ping(context.TODO(), nil)
+	if err != nil {
+		log.Printf("MongoDB ping error: %v", err)
+		return err
+	}
+	
+	log.Printf("Successfully connected to MongoDB!")
 	mongoClient = client
 	return err
 }
@@ -77,13 +79,19 @@ func main() {
 		log.Println("No .env file found")
 	}
 
+	// Reload URI after loading .env file
+	uri = os.Getenv("MONGODB_URL")
+	log.Printf("MONGODB_URL: %s", uri)
+	log.Printf("URI length: %d", len(uri))
+	
 	if uri == "" {
 		log.Fatal("You must set your 'MONGO_URL' environmental variable. See\n\t https://www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
 	}
-	// mongoClient, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
-	// if err != nil {
-	// 	panic(err)
-	// }
+	
+	// Connect to MongoDB
+	if err := connect_to_mongodb(); err != nil {
+		log.Fatal("Could not connect to MongoDB")
+	}
 	defer func() {
 		if err := mongoClient.Disconnect(context.TODO()); err != nil {
 			// panic(err)
