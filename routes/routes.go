@@ -1,6 +1,8 @@
 package routes
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"blog/handlers"
 )
@@ -27,6 +29,13 @@ func SetupRoutes() *gin.Engine {
 		apiGroup.GET("/blogs", handlers.GetBlogs)
 		apiGroup.GET("/blog/:id", handlers.GetBlogByID)
 		apiGroup.GET("/movies", handlers.GetMovies)
+		apiGroup.POST("/seed", func(c *gin.Context) {
+			if err := handlers.SeedBlogs(); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			} else {
+				c.JSON(http.StatusOK, gin.H{"message": "Sample blogs added successfully"})
+			}
+		})
 	}
 
 	// 404 handler

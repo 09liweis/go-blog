@@ -6,6 +6,7 @@ import (
 	"blog/config"
 	"blog/database"
 	"blog/routes"
+	"blog/handlers"
 )
 
 //Todo: add favicon
@@ -23,6 +24,11 @@ func main() {
 			log.Printf("Error disconnecting from MongoDB: %v", err)
 		}
 	}()
+
+	// Seed sample data if database is empty
+	if err := handlers.SeedBlogs(); err != nil {
+		log.Printf("Warning: Could not seed sample data: %v", err)
+	}
 
 	// Setup routes and start server
 	ginServer := routes.SetupRoutes()
