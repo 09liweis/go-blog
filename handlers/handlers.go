@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"net/http"
 	"strconv"
 	"time"
@@ -157,63 +156,6 @@ func HomeHandler(context *gin.Context) {
 		"title": "Go Blogs",
 		"msg":   msg,
 	})
-}
-
-// SeedBlogs adds sample blog data to the database (for testing)
-func SeedBlogs() error {
-	client := database.GetMongoClient()
-	if client == nil {
-		return nil
-	}
-
-	collection := client.Database("heroku_6njptcbp").Collection("blogs")
-	
-	// Check if collection already has data
-	count, err := collection.CountDocuments(context.TODO(), bson.D{})
-	if err != nil {
-		return err
-	}
-	
-	// Only seed if collection is empty
-	if count == 0 {
-		sampleBlogs := []interface{}{
-			Blog{
-				Title:     "Getting Started with Go",
-				Content:   "Go is a powerful programming language developed by Google. It's known for its simplicity and efficiency.",
-				Author:    "John Doe",
-				CreatedAt: time.Now().AddDate(0, 0, -7), // 7 days ago
-				UpdatedAt: time.Now().AddDate(0, 0, -7),
-			},
-			Blog{
-				Title:     "Building Web Applications with Gin",
-				Content:   "Gin is a web framework written in Go that provides a martini-like API with much better performance.",
-				Author:    "Jane Smith",
-				CreatedAt: time.Now().AddDate(0, 0, -5), // 5 days ago
-				UpdatedAt: time.Now().AddDate(0, 0, -5),
-			},
-			Blog{
-				Title:     "MongoDB with Go",
-				Content:   "MongoDB is a popular NoSQL database that works great with Go applications for flexible data storage.",
-				Author:    "Bob Johnson",
-				CreatedAt: time.Now().AddDate(0, 0, -3), // 3 days ago
-				UpdatedAt: time.Now().AddDate(0, 0, -3),
-			},
-			Blog{
-				Title:     "RESTful API Design Best Practices",
-				Content:   "Designing clean and intuitive RESTful APIs is crucial for modern web applications.",
-				Author:    "Alice Brown",
-				CreatedAt: time.Now().AddDate(0, 0, -1), // 1 day ago
-				UpdatedAt: time.Now().AddDate(0, 0, -1),
-			},
-		}
-
-		_, err = collection.InsertMany(context.TODO(), sampleBlogs)
-		if err != nil {
-			return err
-		}
-	}
-	
-	return nil
 }
 
 // NotFoundHandler handles 404 errors
